@@ -27,6 +27,7 @@ import (
 
 	"go.uber.org/zap"
 
+	_ "github.com/cashier-config/server/docs"
 	"github.com/cashier-config/server/internal/config"
 	"github.com/cashier-config/server/internal/database"
 	"github.com/cashier-config/server/internal/handler"
