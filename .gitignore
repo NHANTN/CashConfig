@@ -13,6 +13,7 @@ __pycache__/
 # Generated CSV artifacts
 generated_csv/
 backend/generated/
+csv/
 # Secrets & sensitive data
 backend/config.yaml
 request_body.json
