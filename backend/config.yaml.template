@@ -1,0 +1,41 @@
+server:
+  port: 8080
+  mode: debug
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: cashconfig
+  sslmode: disable
+
+jwt:
+  secret: change-me-in-production
+  ttl: 24
+
+api_key: "api_key_value"
+
+win_till_modules_path: "../path"
+
+# ldap:
+#   enabled: false
+#   host: "ldap.example.com"
+#   port: 389
+#   base_dn: "dc=example,dc=com"
+#   bind_dn: "cn=admin,dc=example,dc=com"
+#   bind_password: "secret"
+#   filter: "(objectClass=person)"
+#   uid_attr: "sAMAccountName"
+#   mail_attr: "mail"
+#   name_attr: "displayName"
+#   default_role_id: 2
+#   starttls: false
+
+# sso:
+#   enabled: false
+#   provider_url: "https://login.microsoftonline.com/{tenant}/v2.0"
+#   client_id: "your-client-id"
+#   client_secret: "your-client-secret"
+#   redirect_url: "http://localhost:3000/auth/sso/callback"
+#   default_role_id: 2
