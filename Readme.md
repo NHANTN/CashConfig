@@ -12,6 +12,7 @@
 | 数据库 | PostgreSQL 16 |
 | ORM | GORM |
 | 认证 | JWT + API Key + LDAP/OIDC (可选) |
+| API 文档 | swaggo/swag + gin-swagger (OpenAPI 2.0) |
 | 状态管理 | Zustand |
 | CSV 处理 | Go encoding/csv + papaparse (浏览器端) |
 
@@ -21,6 +22,7 @@
 收银台配置管理平台/
 ├── backend/                    # Go 后端
 │   ├── cmd/server/main.go      # 入口
+│   ├── docs/                   # Swagger 自动生成的 API 文档
 │   ├── config.yaml             # 配置文件（本地开发用）
 │   ├── internal/
 │   │   ├── config/             # 配置加载
@@ -29,7 +31,7 @@
 │   │   ├── service/            # 业务逻辑层
 │   │   ├── handler/            # HTTP 请求处理层 + 路由注册
 │   │   ├── middleware/         # JWT / API Key 认证中间件
-│   │   └── router/             # 路由组装
+│   │   └── router/             # 路由组装（含 /swagger/*any）
 │   └── generated/              # CSV 生成文件（构建产物，不追踪）
 ├── frontend/                   # React 前端
 │   ├── src/
@@ -60,6 +62,7 @@ cd backend
 # 修改 config.yaml 中的数据库配置
 go run cmd/server/main.go
 # 监听 :8080，首次启动自动建表 + 种子数据（admin / admin123）
+# Swagger UI: http://localhost:8080/swagger/index.html
 ```
 
 ### 启动前端
@@ -121,6 +124,28 @@ server {
         try_files $uri $uri/ /index.html;
     }
 }
+```
+
+## Swagger API 文档
+
+集成 swaggo/swag，启动后端后访问：
+
+```
+http://localhost:8080/swagger/index.html
+```
+
+支持交互式调试，可在 Swagger UI 中直接发送请求测试 API。支持两种认证方式：
+
+1. **API Key** — 点击 `Authorize`，输入 `X-API-Key` 的值
+2. **Bearer Token** — 先调用 `/api/auth/login`，然后将 token 填入 `Authorize`
+
+### 更新 API 文档
+
+修改 handler 注解后，在 `backend/` 目录下重新生成：
+
+```bash
+cd backend
+swag init -g cmd/server/main.go -o docs
 ```
 
 ## API 概览

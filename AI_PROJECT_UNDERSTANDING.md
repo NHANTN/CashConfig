@@ -18,6 +18,7 @@
 |------|------|------|
 | 后端框架 | **Gin** (Go) | HTTP 路由，`backend/cmd/server/main.go` 入口 |
 | ORM | **GORM** | PostgreSQL 16，AutoMigrate 管理表结构 |
+| API 文档 | **swaggo/swag + gin-swagger** | OpenAPI 2.0，注解驱动，`/swagger/*any` |
 | 认证 | **golang-jwt + bcrypt** | JWT Bearer Token |
 | 扩展认证 | **go-ldap + go-oidc** | LDAP（AD/OpenLDAP）和 SSO（Azure AD/Okta/Keycloak） |
 | 日志 | **zap** | JSON 格式 stdout |
@@ -34,18 +35,19 @@
 收银台配置管理平台/
 ├── backend/
 │   ├── cmd/
-│   │   ├── server/main.go        # 入口：初始化 DB、AutoMigrate、注册 Service/Handler、启动
+│   │   ├── server/main.go        # 入口：初始化 DB、AutoMigrate、注册 Service/Handler、启动（含 swagger 注解）
 │   │   ├── sync_groups/main.go   # 工具脚本：从 Module 数据同步 Group
 │   │   └── initdb/main.go        # 工具脚本：创建 cashier_config 数据库
+│   ├── docs/                     # swag init 自动生成的 OpenAPI 文档（需要提交）
 │   ├── config.yaml               # 配置文件（DB、JWT、API Key、LDAP、SSO）
 │   ├── internal/
 │   │   ├── config/config.go      # 配置加载
 │   │   ├── database/             # 数据库连接 + 种子数据 (admin/admin123)
 │   │   ├── model/                # GORM 数据模型
 │   │   ├── service/              # 业务逻辑层
-│   │   ├── handler/              # HTTP 请求处理层
+│   │   ├── handler/              # HTTP 请求处理层（含 swagger 注解）
 │   │   ├── middleware/           # JWT 认证中间件
-│   │   └── router/router.go      # 路由注册（所有路由集中在此）
+│   │   └── router/router.go      # 路由注册（含 /swagger/*any）
 │   └── generated/                # CSV 生成文件存储（按时间戳子目录）
 ├── frontend/
 │   ├── src/
@@ -135,6 +137,11 @@ r := router.Setup([]handler.Handler{
 
 每个 handler 实现 `Register(api gin.IRouter, authed gin.IRouter)` 方法，在自己的文件中完成路由注册。`router.go` 不再维护路由表，只需遍历 `[]Handler` 调用 Register。
 
+`router.go` 额外注册了 Swagger UI 路由（仅在主进程生效）:
+```go
+r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+```
+
 ```go
 // handler/registry.go
 type Handler interface {
@@ -153,6 +160,40 @@ func (h *TillListHandler) Register(api gin.IRouter, authed gin.IRouter) {
 ### 统一返回格式
 
 所有 API 返回 `{ code: 0, message: "ok", data: ... }`，错误时 `code` 为非零。
+
+### Swagger 注解规范
+
+每个 handler 方法上方添加 swaggo/swag 注解，格式：
+
+```go
+// @Summary      List till lists
+// @Description  List till lists with optional filters
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        host_name  query  string  false  "Filter by host name"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists [get]
+func (h *TillListHandler) List(c *gin.Context) { ...
+```
+
+- 公开路由不加 `@Security`（如 `/auth/login`）
+- 需认证路由加两条 `@Security`：`ApiKeyAuth` 和 `BearerAuth`
+- `Parameters()` 注释在 main.go 顶部定义 API 元信息：`@title`、`@version`、`@BasePath`、`@securityDefinitions` 等
+- 路由路径以 `/api` 为根，如 `/till-lists` 对应实际路径 `/api/till-lists`
+
+### 重新生成 API 文档
+
+修改注解后需重新生成：
+
+```bash
+cd backend
+swag init -g cmd/server/main.go -o docs
+```
+
+`backend/docs/` 中的文件需要提交到 git，编译时会嵌入二进制。
 
 ### 认证流程
 
@@ -339,7 +380,7 @@ func (h *TillListHandler) Register(api gin.IRouter, authed gin.IRouter) {
 ```powershell
 # 后端
 cd backend
-go run cmd/server/main.go    # 监听 :8080
+go run cmd/server/main.go    # 监听 :8080，Swagger UI: http://localhost:8080/swagger/index.html
 
 # 前端
 cd frontend
