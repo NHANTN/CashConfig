@@ -165,6 +165,29 @@ swag init -g cmd/server/main.go -o docs
 
 所有 API 统一返回格式: `{ code: 0, message: "ok", data: ... }`
 
+## 高可用部署
+
+### 架构
+
+```
+Nginx LB → Go 实例 xN → PgBouncer → PostgreSQL (Patroni 集群)
+```
+
+- Go 后端无状态，可水平扩展
+- 通过 Nginx 健康检查自动摘除故障节点
+- PostgreSQL 使用 Patroni + etcd 实现自动主从切换
+- PgBouncer 减少 PG 连接数压力
+
+### 并发承载（估算）
+
+| 实例数 | CheckIn 并发 | 管理页面并发 |
+|--------|-------------|-------------|
+| 1      | ~3,000      | ~500        |
+| 2      | ~6,000      | ~1,000      |
+| 4      | ~12,000     | ~2,000      |
+
+> 瓶颈在 PostgreSQL 写入能力。详情见 `开发与运维指南.md → 四、高可用部署方案`。
+
 ## License
 
 Internal Use Only
