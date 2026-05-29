@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -75,11 +76,14 @@ func main() {
 	outputDir := "generated"
 	os.MkdirAll(outputDir, 0755)
 
+	reportWriter := service.NewSyncReportWriter(db, 5000, 50, 100*time.Millisecond, logger)
+	defer reportWriter.Stop()
+
 	authSvc := service.NewAuthService(db, cfg.JWT)
 	moduleSvc := service.NewModuleService(db)
 	ruleSvc := service.NewRuleService(db)
 	storeSvc := service.NewStoreService(db)
-	tillListSvc := service.NewTillListService(db)
+	tillListSvc := service.NewTillListService(db, reportWriter)
 	varSvc := service.NewVarService(db)
 	groupSvc := service.NewGroupService(db)
 	csvGenSvc := service.NewCsvGenerateService(db, moduleSvc, ruleSvc, storeSvc, tillListSvc, varSvc, outputDir)

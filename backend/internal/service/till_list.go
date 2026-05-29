@@ -13,11 +13,12 @@ import (
 )
 
 type TillListService struct {
-	db *gorm.DB
+	db     *gorm.DB
+	writer *SyncReportWriter
 }
 
-func NewTillListService(db *gorm.DB) *TillListService {
-	return &TillListService{db: db}
+func NewTillListService(db *gorm.DB, writer *SyncReportWriter) *TillListService {
+	return &TillListService{db: db, writer: writer}
 }
 
 func (s *TillListService) List(hostName, location, env string) ([]model.TillList, error) {
@@ -151,22 +152,31 @@ func (s *TillListService) QueryReportsByDevice(hostName, macAddress string) ([]D
 	return result, nil
 }
 
-func (s *TillListService) CheckIn(raw string) error {
-	var parsed map[string]interface{}
-	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
-		return err
-	}
-
-	hostName, _ := parsed["Name"].(string)
-	macAddress, _ := parsed["MACAddress"].(string)
-	// Fallback: extract MACAddress from Fact array if not present at top level
-	if macAddress == "" {
+func (s *TillListService) extractFields(parsed map[string]interface{}) (fields struct {
+	hostName      string
+	macAddress    string
+	location      string
+	storeNumber   string
+	env           string
+	ip            string
+	hardwareModel string
+	name          string
+	groupID       int64
+	lastSeen      string
+	execStatus    int
+	duration      int
+	syncTime      string
+	moduleExec    string
+}) {
+	fields.hostName, _ = parsed["Name"].(string)
+	fields.macAddress, _ = parsed["MACAddress"].(string)
+	if fields.macAddress == "" {
 		if facts, ok := parsed["Fact"].([]interface{}); ok {
 			for _, f := range facts {
 				if fact, ok := f.(map[string]interface{}); ok {
 					if key, _ := fact["Key"].(string); key == "MACAddress" {
 						if val, _ := fact["Value"].(string); val != "" {
-							macAddress = val
+							fields.macAddress = val
 							break
 						}
 					}
@@ -174,87 +184,70 @@ func (s *TillListService) CheckIn(raw string) error {
 			}
 		}
 	}
-	location, _ := parsed["Location"].(string)
-	storeNumber, _ := parsed["StoreNumber"].(string)
-	env, _ := parsed["Env"].(string)
-	ip, _ := parsed["Ip"].(string)
-	hardwareModel, _ := parsed["HardwareModel"].(string)
-	name, _ := parsed["Name"].(string)
-	var groupID int64
+	fields.location, _ = parsed["Location"].(string)
+	fields.storeNumber, _ = parsed["StoreNumber"].(string)
+	fields.env, _ = parsed["Env"].(string)
+	fields.ip, _ = parsed["Ip"].(string)
+	fields.hardwareModel, _ = parsed["HardwareModel"].(string)
+	fields.name, _ = parsed["Name"].(string)
 	if g, ok := parsed["Group"].(float64); ok {
-		groupID = int64(g)
+		fields.groupID = int64(g)
 	}
-
-	execStatus := 0
-	duration := 0
-	syncTime := time.Now().Format("2006-01-02 15:04:05")
+	fields.syncTime = time.Now().Format("2006-01-02 15:04:05")
 	if exec, ok := parsed["Execution"].(map[string]interface{}); ok {
 		if s, ok := exec["Status"].(float64); ok {
-			execStatus = int(s)
+			fields.execStatus = int(s)
 		}
 		if d, ok := exec["Duration"].(float64); ok {
-			duration = int(d)
+			fields.duration = int(d)
 		}
 		if start, ok := exec["StartTime"].(string); ok {
-			syncTime = start
+			fields.syncTime = start
 		}
-	}
-
-	var moduleExecBytes []byte
-	if exec, ok := parsed["Execution"].(map[string]interface{}); ok {
 		if me, ok := exec["ModuleExecution"]; ok {
-			moduleExecBytes, _ = json.Marshal(me)
+			b, _ := json.Marshal(me)
+			fields.moduleExec = string(b)
 		}
 	}
+	return
+}
 
-	var existing model.TillList
-	err := s.db.Where("host_name = ?", hostName).First(&existing).Error
-
-	tillListID := int64(0)
-	if err == gorm.ErrRecordNotFound {
-		m := model.TillList{
-			HostName:      hostName,
-			MacAddress:    macAddress,
-			Location:      location,
-			StoreNumber:   storeNumber,
-			Env:           env,
-			Name:          name,
-			Ip:            ip,
-			HardwareModel: hardwareModel,
-			GroupID:       groupID,
-			RequestBody:   raw,
-			LastSeen:      syncTime,
-		}
-		if err := s.db.Create(&m).Error; err != nil {
-			return err
-		}
-		tillListID = m.ID
-	} else if err != nil {
+func (s *TillListService) CheckIn(raw string) error {
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
 		return err
-	} else {
-		tillListID = existing.ID
-		existing.MacAddress = macAddress
-		existing.Location = location
-		existing.StoreNumber = storeNumber
-		existing.Env = env
-		existing.Name = name
-		existing.Ip = ip
-		existing.HardwareModel = hardwareModel
-		existing.GroupID = groupID
-		existing.RequestBody = raw
-		existing.LastSeen = syncTime
-		if err := s.db.Save(&existing).Error; err != nil {
-			return err
-		}
+	}
+	f := s.extractFields(parsed)
+
+	var tillID int64
+	if err := s.db.Raw(
+		`INSERT INTO till_lists (host_name, mac_address, location, store_number, env, name, ip, hardware_model, group_id, request_body, last_seen)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		 ON CONFLICT (host_name) DO UPDATE SET
+		     mac_address = EXCLUDED.mac_address,
+		     location = EXCLUDED.location,
+		     store_number = EXCLUDED.store_number,
+		     env = EXCLUDED.env,
+		     name = EXCLUDED.name,
+		     ip = EXCLUDED.ip,
+		     hardware_model = EXCLUDED.hardware_model,
+		     group_id = EXCLUDED.group_id,
+		     request_body = EXCLUDED.request_body,
+		     last_seen = EXCLUDED.last_seen
+		 RETURNING id`,
+		f.hostName, f.macAddress, f.location, f.storeNumber, f.env,
+		f.name, f.ip, f.hardwareModel, f.groupID, raw, f.syncTime,
+	).Scan(&tillID).Error; err != nil {
+		return err
 	}
 
-	report := model.SyncReport{
-		TillListID:      tillListID,
+	s.writer.Write(model.SyncReport{
+		TillListID:      tillID,
 		RequestBody:     raw,
-		ModuleExecution: string(moduleExecBytes),
-		Status:          execStatus,
-		Duration:        duration,
-		SyncTime:        syncTime,
-	}
-	return s.db.Create(&report).Error
+		ModuleExecution: f.moduleExec,
+		Status:          f.execStatus,
+		Duration:        f.duration,
+		SyncTime:        f.syncTime,
+	})
+	return nil
 }
