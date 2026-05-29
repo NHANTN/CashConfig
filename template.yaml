@@ -1,0 +1,482 @@
+# =============================================
+# 收银台配置管理平台 - 需求模板
+# 填写此文件后，运行: pwsh 生成需求文档.ps1
+# =============================================
+
+# ---------- 1. 项目基本信息 ----------
+project:
+  name: "收银台配置管理平台"        # 项目名称
+  version: "1.0.0"                 # 版本号
+  description: "一个用于管理收银台配置的后台管理系统，支持多门店、多设备的配置统一管理"
+  department: "技术部 / 产品部"     # 负责部门
+
+# ---------- 2. 项目背景与目标 ----------
+business:
+  background: >
+    随着门店数量增加，收银台配置分散管理导致效率低下，
+    需要一个统一的配置管理平台来集中管理所有收银终端的配置。
+  goals:
+    - "统一管理所有门店收银台配置"
+    - "支持配置的远程下发与实时更新"
+    - "提供配置变更的审计与回滚能力"
+    - "降低门店运维成本，提升配置效率"
+  target_users:
+    - "IT运维人员"
+
+# ---------- 3. 用户角色与权限 ----------
+roles:
+  - name: "超级管理员"
+    desc: "拥有系统全部权限"
+    permissions:
+      - "系统全部功能"
+  - name: "运营管理员"
+    desc: "管理门店、设备、商品等核心配置"
+    permissions:
+      - "门店管理"
+      - "设备管理"
+      - "商品管理"
+      - "支付配置"
+      - "收银台布局配置"
+      - "查看报表"
+
+
+# ---------- 4. 功能模块 ----------
+modules:
+
+  # ----- 4a. 前端功能模块 -----
+  frontend:
+    - name: "登录与认证"
+      description: "用户登录、权限校验、多设备登录管理"
+      priority: "P0"
+      features:
+        - "账号密码登录"
+        - "验证码登录（可选）"
+        - "LDAP/OAuth 单点登录（可选）"
+        - "登录态过期处理"
+        - "权限路由动态加载"
+
+    - name: "仪表盘"
+      description: "首页概览，展示关键运营数据"
+      priority: "P0"
+      features:
+        - "今日交易总额"
+        - "今日订单数"
+        - "在线设备数"
+        - "待处理告警"
+        - "近7天交易趋势图"
+
+    - name: "门店管理"
+      description: "管理所有门店信息"
+      priority: "P0"
+      features:
+        - "门店列表（搜索/分页/筛选）"
+        - "新增/编辑门店"
+        - "门店启停用"
+        - "门店详情（设备数量、员工数）"
+        - "门店分组管理"
+
+    - name: "设备管理"
+      description: "管理收银台终端设备"
+      priority: "P0"
+      features:
+        - "设备列表（在线状态、版本信息）"
+        - "设备注册/解绑"
+        - "远程配置下发"
+        - "设备固件升级"
+        - "设备运行监控"
+        - "异常告警管理"
+
+    - name: "报表统计"
+      description: "多维度数据报表"
+      priority: "P1"
+      features:
+        - "销售日报/周报/月报"
+        - "门店销售对比"
+        - "商品销售排行"
+        - "支付方式分布"
+        - "客流统计"
+        - "报表导出（Excel/PDF）"
+
+    - name: "系统设置"
+      description: "系统级配置管理"
+      priority: "P1"
+      features:
+        - "用户管理（增删改查）"
+        - "角色管理"
+        - "操作日志"
+        - "系统参数配置"
+        - "通知设置"
+        - "数据字典"
+
+    - name: "CSV 数据管理 - Module"
+      description: "管理收银台软件模块配置，支持 JSON 格式的步骤规则配置"
+      priority: "P0"
+      features:
+        - "Module 列表（搜索/分页/筛选）"
+        - "新增/编辑/删除 Module"
+        - "JSON 规则在线编辑（步骤 steps 配置）"
+        - "按 Location/Env 筛选"
+        - "Module 模板复制"
+        - "批量导入/导出 CSV"
+        - "Module 版本管理"
+        - "步骤路径校验（ps1 文件是否存在）"
+
+    - name: "CSV 数据管理 - Rule"
+      description: "管理设备匹配规则，支持 env（主机名匹配）和 group（设备型号匹配）两种类型"
+      priority: "P0"
+      features:
+        - "Rule 列表（搜索/分页/筛选）"
+        - "新增/编辑/删除 Rule"
+        - "按 Type/Type/Location 筛选"
+        - "规则正则校验"
+        - "规则优先级排序"
+        - "规则模拟测试（输入 HostName 看匹配哪个 Result）"
+        - "批量导入/导出 CSV"
+
+    - name: "CSV 数据管理 - Store"
+      description: "管理门店网络与支付配置数据"
+      priority: "P0"
+      features:
+        - "Store 列表（搜索/分页/筛选）"
+        - "新增/编辑/删除 Store"
+        - "按 Location/EFT 筛选"
+        - "IP 段格式校验"
+        - "批量导入/导出 CSV"
+        - "门店配置对比"
+        - "网络配置可视化"
+
+    - name: "CSV 数据管理 - TillList"
+      description: "管理收银台设备清单（HostName 与 MAC 地址映射）"
+      priority: "P1"
+      features:
+        - "TillList 列表（搜索/分页）"
+        - "新增/编辑/删除 Till"
+        - "MAC 地址格式校验"
+        - "HostName 唯一性校验"
+        - "批量导入/导出 CSV"
+
+    - name: "CSV 数据管理 - Var"
+      description: "管理环境变量配置，支持多环境（pr/pp/lab）多值"
+      priority: "P1"
+      features:
+        - "Var 列表（搜索/分页/筛选）"
+        - "新增/编辑/删除 Var"
+        - "按 Var_Name/Env 筛选"
+        - "同名变量多环境对比"
+        - "Matcher 规则配置"
+        - "批量导入/导出 CSV"
+
+    - name: "CSV 文件生成与下载"
+      description: "一键生成所有 CSV 配置文件并打包下载"
+      priority: "P0"
+      features:
+        - "手动触发 CSV 重新生成"
+        - "选择指定 CSV 文件生成"
+        - "生成记录与版本管理"
+        - "CSV 文件预览"
+        - "CSV 差异对比（Diff）"
+        - "下载单文件 / 打包下载（ZIP）"
+        - "CSV 文件内容格式校验"
+        - "生成历史与回滚"
+
+  # ----- 4b. 后端 API 模块 -----
+  backend:
+    - name: "认证服务"
+      description: "用户认证与授权"
+      priority: "P0"
+      endpoints:
+        - "POST   /api/auth/login              # 登录"
+        - "POST   /api/auth/logout             # 登出"
+        - "POST   /api/auth/refresh            # 刷新令牌"
+        - "GET    /api/auth/permissions        # 获取当前用户权限"
+
+    - name: "门店服务"
+      description: "门店 CRUD 与管理"
+      priority: "P0"
+      endpoints:
+        - "GET    /api/stores                  # 门店列表"
+        - "POST   /api/stores                  # 新增门店"
+        - "PUT    /api/stores/:id              # 编辑门店"
+        - "DELETE /api/stores/:id              # 删除门店"
+        - "PATCH  /api/stores/:id/status       # 启停用门店"
+        - "GET    /api/stores/:id              # 门店详情"
+
+    - name: "设备服务"
+      description: "设备注册、监控、配置下发"
+      priority: "P0"
+      endpoints:
+        - "GET    /api/devices                 # 设备列表"
+        - "POST   /api/devices/register        # 设备注册"
+        - "DELETE /api/devices/:id             # 解绑设备"
+        - "POST   /api/devices/:id/config      # 下发配置"
+        - "GET    /api/devices/:id/status      # 设备状态"
+        - "POST   /api/devices/:id/upgrade     # 固件升级"
+
+    - name: "系统管理服务"
+      description: "用户、角色、日志管理"
+      priority: "P1"
+      endpoints:
+        - "GET    /api/system/users            # 用户列表"
+        - "POST   /api/system/users            # 新增用户"
+        - "PUT    /api/system/users/:id        # 编辑用户"
+        - "DELETE /api/system/users/:id        # 删除用户"
+        - "GET    /api/system/roles            # 角色列表"
+        - "POST   /api/system/roles            # 新增角色"
+        - "GET    /api/system/logs             # 操作日志"
+
+    - name: "CSV Module 管理服务"
+      description: "Module 数据的 CRUD 与 CSV 导入导出"
+      priority: "P0"
+      endpoints:
+        - "GET    /api/csv/modules              # Module 列表"
+        - "POST   /api/csv/modules              # 新增 Module"
+        - "PUT    /api/csv/modules/:id          # 编辑 Module"
+        - "DELETE /api/csv/modules/:id          # 删除 Module"
+        - "POST   /api/csv/modules/import       # 导入 CSV"
+        - "GET    /api/csv/modules/export       # 导出 CSV（Module.csv 格式）"
+        - "PUT    /api/csv/modules/:id/rules    # 编辑 JSON rules"
+
+    - name: "CSV Rule 管理服务"
+      description: "Rule 数据的 CRUD 与 CSV 导入导出"
+      priority: "P0"
+      endpoints:
+        - "GET    /api/csv/rules                # Rule 列表"
+        - "POST   /api/csv/rules                # 新增 Rule"
+        - "PUT    /api/csv/rules/:id            # 编辑 Rule"
+        - "DELETE /api/csv/rules/:id            # 删除 Rule"
+        - "POST   /api/csv/rules/import         # 导入 CSV"
+        - "GET    /api/csv/rules/export         # 导出 CSV（Rule.csv 格式）"
+        - "POST   /api/csv/rules/test           # 规则模拟测试"
+
+    - name: "CSV Store 管理服务"
+      description: "Store 数据的 CRUD 与 CSV 导入导出"
+      priority: "P0"
+      endpoints:
+        - "GET    /api/csv/stores               # Store 列表"
+        - "POST   /api/csv/stores               # 新增 Store"
+        - "PUT    /api/csv/stores/:id           # 编辑 Store"
+        - "DELETE /api/csv/stores/:id           # 删除 Store"
+        - "POST   /api/csv/stores/import        # 导入 CSV"
+        - "GET    /api/csv/stores/export        # 导出 CSV（Store.csv 格式）"
+
+    - name: "CSV TillList 管理服务"
+      description: "TillList 数据的 CRUD 与 CSV 导入导出"
+      priority: "P1"
+      endpoints:
+        - "GET    /api/csv/tills                # TillList 列表"
+        - "POST   /api/csv/tills                # 新增 Till"
+        - "PUT    /api/csv/tills/:id            # 编辑 Till"
+        - "DELETE /api/csv/tills/:id            # 删除 Till"
+        - "POST   /api/csv/tills/import         # 导入 CSV"
+        - "GET    /api/csv/tills/export         # 导出 CSV（TillList.csv 格式）"
+
+    - name: "CSV Var 管理服务"
+      description: "Var 数据的 CRUD 与 CSV 导入导出"
+      priority: "P0"
+      endpoints:
+        - "GET    /api/csv/vars                 # Var 列表"
+        - "POST   /api/csv/vars                 # 新增 Var"
+        - "PUT    /api/csv/vars/:id             # 编辑 Var"
+        - "DELETE /api/csv/vars/:id             # 删除 Var"
+        - "POST   /api/csv/vars/import          # 导入 CSV"
+        - "GET    /api/csv/vars/export          # 导出 CSV（Var.csv 格式）"
+
+    - name: "CSV 文件生成服务"
+      description: "一键生成并下载所有 CSV 文件"
+      priority: "P0"
+      endpoints:
+        - "POST   /api/csv/generate             # 触发重新生成所有 CSV"
+        - "POST   /api/csv/generate/:type       # 生成指定类型 CSV（module/rule/store/till/var）"
+        - "GET    /api/csv/download/:type       # 下载单个 CSV 文件"
+        - "GET    /api/csv/download/all         # 打包下载全部 CSV（ZIP）"
+        - "GET    /api/csv/diff/:type           # CSV 版本差异对比"
+        - "GET    /api/csv/history/:type        # CSV 生成历史"
+
+# ---------- 5. 数据库设计概述 ----------
+database:
+  tables:
+    - name: "store"
+      comment: "门店表"
+      fields: "id, name, code, address, contact, phone, status, created_at, updated_at"
+    - name: "device"
+      comment: "设备表"
+      fields: "id, store_id, device_code, name, type, status, version, config, last_heartbeat, created_at"
+    - name: "user"
+      comment: "用户表"
+      fields: "id, username, password_hash, name, role_id, store_id, status, created_at"
+    - name: "role"
+      comment: "角色表"
+      fields: "id, name, code, permissions(JSON), status, created_at"
+      fields: "id, order_id, product_id, quantity, price, subtotal"
+    - name: "operation_log"
+      comment: "操作日志表"
+      fields: "id, user_id, action, target_type, target_id, detail(JSON), created_at"
+    - name: "csv_module"
+      comment: "CSV Module 数据表"
+      fields: "id, name, location, modules(JSON), env, created_at, updated_at"
+    - name: "csv_rule"
+      comment: "CSV Rule 数据表"
+      fields: "id, name, type, location, env_name, rule_pattern, result, sort, created_at, updated_at"
+    - name: "csv_store"
+      comment: "CSV Store 数据表"
+      fields: "id, store_number, network_segment, webpos_env, eft, location, rf_server, cashtill_seg_gw, created_at, updated_at"
+    - name: "csv_till"
+      comment: "CSV TillList 数据表"
+      fields: "id, hostname, mac_address, created_at, updated_at"
+    - name: "csv_var"
+      comment: "CSV Var 数据表"
+      fields: "id, var_name, value, env, matcher(JSON), created_at, updated_at"
+    - name: "csv_generation_log"
+      comment: "CSV 生成日志表"
+      fields: "id, generate_time, file_type, file_count, operator, status, detail"
+
+# ---------- 6. 技术栈偏好 ----------
+tech_stack:
+  frontend:
+    framework: "React 18"               # React 18 + TypeScript
+    ui_library: "Ant Design 5"          # 企业级 UI 组件库
+    build_tool: "Vite"                  # 极速构建
+    state_management: "Zustand"         # 轻量状态管理
+    http_client: "Axios"
+    csv_library: "papaparse"            # 前端 CSV 解析/生成
+    form_library: "React Hook Form"     # 表单处理
+    additional: "react-router-dom 6, dayjs, @ant-design/icons"
+
+  backend:
+    language: "Go 1.22+"
+    framework: "Gin"                    # 高性能 HTTP 框架
+    router: "gin-router"
+    orm: "GORM"                         # Go 最主流 ORM
+    database: "PostgreSQL 16"           # 更强类型、JSON 支持、适合复杂查询
+    cache: "Redis"                      # 可选：缓存/会话管理
+    migration: "golang-migrate"         # 数据库版本迁移
+    config: "Viper"                     # 配置管理
+    auth: "golang-jwt / casbin"         # JWT 认证 + RBAC 权限
+    csv: "encoding/csv (stdlib)"        # Go 标准库 CSV 处理
+    validator: "go-playground/validator" # 参数校验
+    api_docs: "swaggo/swag"             # Swagger / OpenAPI 自动文档
+    log: "zap"                          # 高性能结构化日志
+    test: "testify"                     # 单元测试
+
+  deployment:
+    container: "Docker + Docker Compose"
+    ci_cd: "GitHub Actions"
+    server: "Linux (Ubuntu 22.04)"
+    reverse_proxy: "Nginx"
+
+# ---------- 7. 非功能性需求 ----------
+non_functional:
+  performance:
+    - "页面加载时间不超过 2 秒"
+    - "API 响应时间不超过 500ms（95分位）"
+    - "支持 200+ 并发用户"
+    - "报表查询不超过 5 秒"
+  security:
+    - "使用 HTTPS"
+    - "JWT Token 鉴权"
+    - "敏感数据加密存储"
+    - "操作日志记录审计"
+    - "防 SQL 注入/XSS/CSRF"
+  availability:
+    - "系统可用性 ≥ 99.9%"
+    - "支持配置自动备份"
+    - "服务异常自动告警"
+  scalability:
+    - "支持水平扩展"
+    - "支持多门店数据隔离"
+    - "配置模板支持批量下发"
+
+# ---------- 8. 页面路由规划 ----------
+routes:
+  - path: "/login"
+    name: "登录"
+    component: "Login.vue"
+    roles: ["所有"]
+  - path: "/"
+    name: "仪表盘"
+    component: "Dashboard.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/stores"
+    name: "门店管理"
+    component: "StoreList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/stores/:id"
+    name: "门店详情"
+    component: "StoreDetail.vue"
+    roles: ["超级管理员", "运营管理员", "门店店长"]
+  - path: "/devices"
+    name: "设备管理"
+    component: "DeviceList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/devices/:id"
+    name: "设备详情"
+    component: "DeviceDetail.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/layout"
+    name: "收银台布局"
+    component: "LayoutConfig.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/reports"
+    name: "报表统计"
+    component: "Dashboard.vue"
+    roles: ["超级管理员", "运营管理员", "财务人员"]
+  - path: "/system/users"
+    name: "用户管理"
+    component: "UserList.vue"
+    roles: ["超级管理员"]
+  - path: "/system/roles"
+    name: "角色管理"
+    component: "RoleList.vue"
+    roles: ["超级管理员"]
+  - path: "/system/logs"
+    name: "操作日志"
+    component: "OperationLog.vue"
+    roles: ["超级管理员"]
+  - path: "/system/settings"
+    name: "系统设置"
+    component: "SystemSettings.vue"
+    roles: ["超级管理员"]
+  - path: "/csv/modules"
+    name: "CSV Module 管理"
+    component: "CsvModuleList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/modules/:id"
+    name: "Module 详情"
+    component: "CsvModuleDetail.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/rules"
+    name: "CSV Rule 管理"
+    component: "CsvRuleList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/rules/:id"
+    name: "Rule 详情"
+    component: "CsvRuleDetail.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/stores"
+    name: "CSV Store 管理"
+    component: "CsvStoreList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/tills"
+    name: "CSV TillList 管理"
+    component: "CsvTillList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/vars"
+    name: "CSV Var 管理"
+    component: "CsvVarList.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/generate"
+    name: "CSV 文件生成"
+    component: "CsvGenerate.vue"
+    roles: ["超级管理员", "运营管理员"]
+  - path: "/csv/history"
+    name: "CSV 生成历史"
+    component: "CsvHistory.vue"
+    roles: ["超级管理员", "运营管理员"]
+
+# ---------- 9. 附加说明 ----------
+notes:
+  - "以上为初始版本规划，可根据实际需求调整"
+  - "P0 为必须实现的核心功能，P1 为迭代优化功能"
+  - "所有配置变更需记录操作日志"
+  - "API 统一返回格式: { code, message, data }"
+  - "建议分两期开发：第一期实现 P0 功能，第二期实现 P1 功能"

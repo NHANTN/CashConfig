@@ -1,0 +1,39 @@
+# =============================================
+# CSV 数据源文件
+# 编辑此文件中的数据，运行 csv_generator.py 即可生成 CSV
+# =============================================
+
+csv_data:
+  # ----- Module.csv: Name, Location, Modules(JSON), Env, ID -----
+  modules:
+    - ["AllInOne_JPOS", "CN", '[{"name": "AllInOne_JPOS", "steps": [{"name": "HWM", "path": "HWM/CN/ALLINONE/hwm_jpos.ps1"}, {"name": "UPOS", "path": "RFID/CN/UPOS.ps1"}, {"name": "JPOS", "path": "JavaPos/CN/ALLINONE/jpos.ps1"}, {"name": "EFT", "path": "EFT/CN/ICBC/icbc.ps1"}]}, {"name": "Cashtill_Toolbox", "steps": [{"name": "hotkey", "path": "Toolbox/HotKey/hot_key.ps1"}, {"name": "AsiaCashtillTool", "path": "Toolbox/AsiaWindowsCashtillTool/cashtill_tool.ps1"}]}]', "pr", 7]
+    - ["M2", "CN", '[{"name": "M2", "steps": [{"name": "HWM", "path": "HWM/CN/Till/hwm.ps1"}, {"name": "UPOS", "path": "RFID/CN/UPOS.ps1"}, {"name": "JPOS", "path": "JavaPos/CN/M2&R2/th200i.ps1"}, {"name": "EFT", "path": "EFT/CN/ICBC/icbc.ps1"}]}, {"name": "Cashtill_Toolbox", "steps": [{"name": "hotkey", "path": "Toolbox/HotKey/hot_key.ps1"}, {"name": "AsiaCashtillTool", "path": "Toolbox/AsiaWindowsCashtillTool/cashtill_tool.ps1"}]}]', "pr", 8]
+
+  # ----- Rule.csv: Name, Type, Location, ENV_NAME, Rule, Result -----
+  rules:
+    - ["CN_LAB_Register", "env", "CN", "InfraAuto_Hostname", "cnt0806.*", "lab"]
+    - ["CN_PP_Store", "env", "CN", "InfraAuto_Hostname", "CNT1628.*|CNT0901.*|CNT0422.*", "pp"]
+    - ["CN_PR_Register", "env", "CN", "InfraAuto_Hostname", ".*", "pr"]
+    - ["SG_PR_BeetleA_P1200", "group", "SG", "InfraAuto_Device_Model", "BeetleA", "BeetleA_P1200"]
+
+  # ----- Store.csv: Store_Number, Network_Segment, Webpos_Env, EFT, Location, RF_Server, Cashtill_Seg_GW -----
+  stores:
+    - [806, "10.66.48.0", "pr", "ICBC", "CN", "10.69.127.244", "10.69.63.225"]
+    - [388, "10.5.253.0", "pr", "GMC", "CN", "10.69.96.4", "10.69.0.1"]
+    - [969, "10.17.253.0", "pr", "NETS", "SG", "10.17.52.212", "10.17.56.209"]
+    - [666, "10.0.253.0", "pr", "Taishin", "TW", "10.0.53.244", "10.0.59.225"]
+
+  # ----- TillList.csv: HostName, MacAddress -----
+  tills:
+    - ["CNT080634", "4C-52-62-35-BC-01"]
+    - ["CNT162801", "4C-52-62-35-BC-02"]
+
+  # ----- Var.csv: Var_Name, Value, Env, Matcher -----
+  vars:
+    - ["TW_PARK_STORE_NO", "1222,1229,1292,1633,666,871,928,988,926", "pr", "[]"]
+    - ["Greengate_Store", "806", "lab", "[]"]
+    - ["Greengate_Store", "1277,856,665,1719,1203", "pr", "[]"]
+    - ["AsiaWindowsCashtillTool_SRC", "https://infra-auto.dktapp.cloud/public/shell/AsiaWindowsCashtillTool_1.0.14.exe", "lab", "[]"]
+    - ["AsiaWindowsCashtillTool_SRC", "https://infra-auto.dktapp.cloud/public/shell/AsiaWindowsCashtillTool_1.0.12.exe", "pr", "[]"]
+    - ["AsiaWindowsCashtillTool_Ver", "1.0.14", "lab", "[]"]
+    - ["AsiaWindowsCashtillTool_Ver", "1.0.12", "pr", "[]"]
