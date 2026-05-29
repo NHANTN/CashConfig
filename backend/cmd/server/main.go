@@ -1,3 +1,23 @@
+// @title          收银台配置管理平台 API
+// @version         1.0.0
+// @description     收银台终端配置的统一管理平台，支持多门店、多设备的配置远程下发、模块执行监控与同步报告查询
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+
+// @license.name  Internal Use Only
+
+// @host      localhost:8080
+// @BasePath  /api
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in                         header
+// @name                       X-API-Key
+
+// @securityDefinitions.apikey BearerAuth
+// @in                         header
+// @name                       Authorization
 package main
 
 import (

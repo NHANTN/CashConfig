@@ -21,6 +21,14 @@ func (h *DashboardHandler) Register(api gin.IRouter, authed gin.IRouter) {
 	authed.GET("/dashboard/stats", h.Stats)
 }
 
+// @Summary      Dashboard stats
+// @Description  Get aggregate counts of all resources
+// @Tags         Dashboard
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /dashboard/stats [get]
 func (h *DashboardHandler) Stats(c *gin.Context) {
 	var moduleCount, ruleCount, storeCount, tillCount, varCount, groupCount, userCount int64
 	h.db.Model(&model.Module{}).Count(&moduleCount)

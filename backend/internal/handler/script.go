@@ -25,6 +25,13 @@ func (h *ScriptHandler) Register(api gin.IRouter, authed gin.IRouter) {
 	api.GET("/script-files", h.ListFiles)
 }
 
+// @Summary      List script files
+// @Description  List available PowerShell/BAT/CMD script files in the win-till-modules directory
+// @Tags         Script
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /script-files [get]
 func (h *ScriptHandler) ListFiles(c *gin.Context) {
 	absPath, err := filepath.Abs(h.modulesPath)
 	if err != nil {

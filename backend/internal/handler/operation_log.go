@@ -22,6 +22,16 @@ func (h *OperationLogHandler) Register(api gin.IRouter, authed gin.IRouter) {
 	system.GET("/logs", h.List)
 }
 
+// @Summary      List operation logs
+// @Tags         System
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        target_type  query  string  false  "Filter by target type"
+// @Param        action       query  string  false  "Filter by action"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /system/logs [get]
 func (h *OperationLogHandler) List(c *gin.Context) {
 	var logs []model.OperationLog
 	q := h.db.Order("created_at DESC")

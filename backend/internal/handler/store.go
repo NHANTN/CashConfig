@@ -31,6 +31,16 @@ func (h *StoreHandler) Register(api gin.IRouter, authed gin.IRouter) {
 	stores.GET("/export/csv", h.ExportCSV)
 }
 
+// @Summary      List stores
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        location  query  string  false  "Filter by location"
+// @Param        eft       query  string  false  "Filter by EFT type"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /stores [get]
 func (h *StoreHandler) List(c *gin.Context) {
 	location := c.Query("location")
 	eft := c.Query("eft")
@@ -42,6 +52,15 @@ func (h *StoreHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": list})
 }
 
+// @Summary      Get store by ID
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path  int  true  "Store ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  map[string]interface{}
+// @Router       /stores/{id} [get]
 func (h *StoreHandler) Get(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -56,6 +75,16 @@ func (h *StoreHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": m})
 }
 
+// @Summary      Create store
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /stores [post]
 func (h *StoreHandler) Create(c *gin.Context) {
 	var m model.Store
 	if err := c.ShouldBindJSON(&m); err != nil {
@@ -69,6 +98,17 @@ func (h *StoreHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"code": 0, "message": "created", "data": m})
 }
 
+// @Summary      Update store
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id   path  int  true  "Store ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /stores/{id} [put]
 func (h *StoreHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -88,6 +128,15 @@ func (h *StoreHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "updated", "data": m})
 }
 
+// @Summary      Delete store
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path  int  true  "Store ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /stores/{id} [delete]
 func (h *StoreHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -101,6 +150,17 @@ func (h *StoreHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "deleted"})
 }
 
+// @Summary      Import store CSV
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file  formData  file  true  "CSV file"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /stores/import [post]
 func (h *StoreHandler) ImportCSV(c *gin.Context) {
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
@@ -121,6 +181,16 @@ func (h *StoreHandler) ImportCSV(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": gin.H{"imported": count}})
 }
 
+// @Summary      Export store CSV
+// @Tags         Store
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      text/csv
+// @Param        location  query  string  false  "Filter by location"
+// @Param        eft       query  string  false  "Filter by EFT type"
+// @Success      200  {file}  string  "CSV file"
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /stores/export/csv [get]
 func (h *StoreHandler) ExportCSV(c *gin.Context) {
 	location := c.Query("location")
 	eft := c.Query("eft")

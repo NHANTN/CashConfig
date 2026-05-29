@@ -35,6 +35,18 @@ func (h *TillListHandler) Register(api gin.IRouter, authed gin.IRouter) {
 	tills.POST("/checkin", h.CheckIn)
 }
 
+// @Summary      List till lists
+// @Description  List till lists with optional filters
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        host_name  query  string  false  "Filter by host name (LIKE)"
+// @Param        location   query  string  false  "Filter by location"
+// @Param        env        query  string  false  "Filter by environment"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists [get]
 func (h *TillListHandler) List(c *gin.Context) {
 	hostName := c.Query("host_name")
 	location := c.Query("location")
@@ -47,6 +59,16 @@ func (h *TillListHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": list})
 }
 
+// @Summary      Get till list by ID
+// @Description  Get a single till list entry
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path  int  true  "Till list ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  map[string]interface{}
+// @Router       /till-lists/{id} [get]
 func (h *TillListHandler) Get(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -61,6 +83,17 @@ func (h *TillListHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": m})
 }
 
+// @Summary      Create till list
+// @Description  Create a new till list entry
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists [post]
 func (h *TillListHandler) Create(c *gin.Context) {
 	var m model.TillList
 	if err := c.ShouldBindJSON(&m); err != nil {
@@ -74,6 +107,18 @@ func (h *TillListHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"code": 0, "message": "created", "data": m})
 }
 
+// @Summary      Update till list
+// @Description  Update an existing till list entry
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id   path  int  true  "Till list ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists/{id} [put]
 func (h *TillListHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -93,6 +138,16 @@ func (h *TillListHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "updated", "data": m})
 }
 
+// @Summary      Delete till list
+// @Description  Delete a till list entry
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path  int  true  "Till list ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists/{id} [delete]
 func (h *TillListHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -106,6 +161,18 @@ func (h *TillListHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "deleted"})
 }
 
+// @Summary      Import till list CSV
+// @Description  Import till list data from CSV file upload
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file  formData  file  true  "CSV file"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists/import [post]
 func (h *TillListHandler) ImportCSV(c *gin.Context) {
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
@@ -126,6 +193,18 @@ func (h *TillListHandler) ImportCSV(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": gin.H{"imported": count}})
 }
 
+// @Summary      Export till list CSV
+// @Description  Export till list data as CSV file
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      text/csv
+// @Param        host_name  query  string  false  "Filter by host name"
+// @Param        location   query  string  false  "Filter by location"
+// @Param        env        query  string  false  "Filter by environment"
+// @Success      200  {file}  string  "CSV file"
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists/export/csv [get]
 func (h *TillListHandler) ExportCSV(c *gin.Context) {
 	hostName := c.Query("host_name")
 	location := c.Query("location")
@@ -139,6 +218,16 @@ func (h *TillListHandler) ExportCSV(c *gin.Context) {
 	c.Data(http.StatusOK, "text/csv; charset=utf-8", data)
 }
 
+// @Summary      List reports for a till list
+// @Description  Get all sync reports for a specific till list
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path  int  true  "Till list ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists/{id}/reports [get]
 func (h *TillListHandler) ListReports(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -153,6 +242,17 @@ func (h *TillListHandler) ListReports(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": reports})
 }
 
+// @Summary      Get a single report
+// @Description  Get a specific sync report by ID
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id        path  int  true  "Till list ID"
+// @Param        reportId  path  int  true  "Report ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  map[string]interface{}
+// @Router       /till-lists/{id}/reports/{reportId} [get]
 func (h *TillListHandler) GetReport(c *gin.Context) {
 	reportID, err := strconv.ParseInt(c.Param("reportId"), 10, 64)
 	if err != nil {
@@ -167,6 +267,17 @@ func (h *TillListHandler) GetReport(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": r})
 }
 
+// @Summary      Query reports by device
+// @Description  Query sync reports grouped by device, filtering by host_name or mac_address
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Produce      json
+// @Param        host_name    query  string  false  "Host name (LIKE)"
+// @Param        mac_address  query  string  false  "MAC address (exact)"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]interface{}
+// @Router       /till-lists/reports [get]
 func (h *TillListHandler) QueryReports(c *gin.Context) {
 	hostName := c.Query("host_name")
 	macAddress := c.Query("mac_address")
@@ -178,6 +289,16 @@ func (h *TillListHandler) QueryReports(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok", "data": result})
 }
 
+// @Summary      CheckIn
+// @Description  Receive check-in data from a till device (raw JSON)
+// @Tags         TillList
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /till-lists/checkin [post]
 func (h *TillListHandler) CheckIn(c *gin.Context) {
 	raw, _ := c.GetRawData()
 	if err := h.svc.CheckIn(string(raw)); err != nil {
